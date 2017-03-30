@@ -40,7 +40,7 @@ class Pipeline(object):
         self.localizer.fit(self.loc_data['X_train'], self.loc_data['y_train'],
                            batch_size=batch_size, nb_epoch=nb_epoch, shuffle=True, verbose=2, callbacks=call,
                            validation_data=(self.loc_data['X_val'], self.loc_data['y_val']))
-        print "A"
+
         # Fit classifier
         self.classifier.fit(self.cls_data['X_train'], self.cls_data['y_train'],
                             batch_size=batch_size, nb_epoch=nb_epoch, shuffle=True, verbose=2, callbacks=call,
@@ -49,9 +49,9 @@ class Pipeline(object):
     def predict(self, X_test, batch_size=10, verbose=1):
         # Predict first boxes for every image
         box_pred = self.localizer.predict(X_test.astype('float32'), batch_size, verbose)
-        
+
         # Crop original images based on the bbox predictions
-        W, H = self.cls_data['X_train'].shape[:2]
+        W, H = self.cls_data['X_train'].shape[1:3]
         cropped_pred = crop_images(X_test, box_pred, W, H)
         
         final_pred = self.classifier.predict(cropped_pred, batch_size, verbose)

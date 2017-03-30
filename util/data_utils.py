@@ -92,12 +92,29 @@ def resize_data_and_box(data, box, new_width, new_height):
 
 
 def crop_images(images, boxes, width, height):
-    N = images.shape[0]
+    N, old_H, old_W = images.shape[0:3]
     cropped_images = np.zeros((N, height, width, 3))
-    
+
     for i in range(N):
-        x, y, w, h = boxes[i]
-        cropped_images[i] = images[i, y:y+h, x:x+w, :].resize(height, width, 3)
+        x, y, w, h = boxes[i].astype(int)
+        
+        if (x + w) > old_W:
+            hlimit = old_W-1
+        else:
+            hlimit = x + w
+        
+        if (y + w) > old_H:
+            vlimit = old_H-1
+        else:
+            vlimit = y + h
+            
+        if x > old_W:
+            x = old_W - 2
+        if y > old_H:
+            y = old_H - 2
+            
+        fish = images[i, y:vlimit, x:hlimit, :].copy()
+        cropped_images[i] = fish.resize(height, width, 3)
         
     return cropped_images
         
