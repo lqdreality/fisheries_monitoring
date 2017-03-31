@@ -1,0 +1,10 @@
+#!/bin/bash
+cd /a/data/fisheries_monitoring/data/localizers/blur
+for f in `ls -d */`
+do
+  cd $f
+  echo "Removing $f"
+  ls | grep 'img_[0-9]*.jpg' | xargs rm
+  #ls | grep 'img_[0-9]*.jpg' | xargs rm
+  cd ..
+done

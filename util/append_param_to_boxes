@@ -1,0 +1,13 @@
+#!/bin/bash
+aug_dir=$1
+shift
+cd /a/data/fisheries_monitoring/data/localizers/$aug_dir
+if [ -e /tmp/boxes_tmp.csv ]
+then
+  rm /tmp/boxes_tmp.csv
+fi
+for p in "$@"
+do
+    awk -v p=$p '{ split($1,a,"."); print a[1]"_"p".jpg,"$2","$3","$4","$5 }' FS="," boxes.csv >> /tmp/boxes_tmp.csv
+done
+cp /tmp/boxes_tmp.csv boxes_tmp.csv
