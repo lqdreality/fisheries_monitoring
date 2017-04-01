@@ -92,12 +92,72 @@ def resize_data_and_box(data, box, new_width, new_height):
 
 
 def crop_images(images, boxes, width, height):
-    N = images.shape[0]
+    N, old_H, old_W = images.shape[0:3]
     cropped_images = np.zeros((N, height, width, 3))
-    
+
     for i in range(N):
-        x, y, w, h = boxes[i]
-        cropped_images[i] = images[i, y:y+h, x:x+w, :].resize(height, width, 3)
+        x, y, w, h = boxes[i].astype(int)
+        
+        if (x + w) > old_W:
+            hlimit = old_W-1
+        else:
+            hlimit = x + w
+        
+        if (y + w) > old_H:
+            vlimit = old_H-1
+        else:
+            vlimit = y + h
+            
+        if x > old_W:
+            x = old_W - 2
+        if y > old_H:
+            y = old_H - 2
+            
+        fish = images[i, y:vlimit, x:hlimit, :].copy()
+        cropped_images[i] = fish.resize(height, width, 3)
         
     return cropped_images
-        
+
+
+def visualize_grid(data, preds):
+    numrows = 4
+    numcols = 4
+
+    class_idxs = np.random.choice(len(data['class_names']), size=numrows, replace=False)
+    for i, class_idx in enumerate(class_idxs):
+      idxs = np.random.choice(data.shape[0], size=numcols*numrows, replace=False)
+      for j, train_idx in enumerate(train_idxs):
+        img = data[idxs]
+        # Position next image in the grid
+        _, ax = plt.subplot(numcols, numrows, 1 + i + numrows * j)
+        # Visualize it along with the box
+        visualize_image(ax, img,  pred_box=preds)
+
+    plt.show()
+
+
+def visualize_image(ax, true_box = None, pred_box = None):
+    plt.imshow(img)
+    plt.gca().axis('off')
+    if true_box is not None:
+        x, y, width, height = true_box
+        ax.add_patch(
+        patches.Rectangle(
+            (x, y), # x,y
+            width, # width
+            height, # height
+            hatch='\\',
+            fill=False      # remove background
+                )
+            )
+    if pred_box is not None:
+        x, y, width, height = pred_box
+        ax.add_patch(
+        patches.Rectangle(
+            (x, y), # x,y
+            width, # width
+            height, # height
+            hatch='-',
+            fill=False      # remove background
+                )
+            )
