@@ -70,7 +70,7 @@ class Pipeline(object):
         # Crop original images based on the bbox predictions
         W, H = self.cls_data['X_train'].shape[1:3]
         cropped_pred = crop_images(X_test, box_pred, W, H)
-        print cropped_pred.shape
+        
         final_pred = self.classifier.predict(cropped_pred, batch_size, verbose)
         
         return final_pred
@@ -91,12 +91,10 @@ class Pipeline(object):
         if cls_name != None:
             self.classifier.save_weighs('models/localizers/%s.h5' % cls_name)
         
-    def visualize_predictions(self, n):
-        idx = np.random.choice(len(X_test), size=n)
+    def visualize_predictions(self):
         X_test = self.box_predictions['X_test']
-        preds = self.box_predictions['pres']
+        preds = self.box_predictions['pred']
     
-        for i in idx:
-             visualize_image(X_test[i], "", self.box_predictions['pred'])
+        visualize_grid(X_test, preds)
             
             
