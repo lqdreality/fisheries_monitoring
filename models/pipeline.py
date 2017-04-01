@@ -87,9 +87,9 @@ class Pipeline(object):
         
     def save_models(self, loc_name=None, cls_name=None):
         if loc_name != None:
-            self.localizer.save_weights('models/localizers/%s.h5' % loc_name)
+            self.localizer.save_weights('/a/data/fisheries_monitoring/data/models/localizers/%s.h5' % loc_name)
         if cls_name != None:
-            self.classifier.save_weighs('models/localizers/%s.h5' % cls_name)
+            self.classifier.save_weights('/a/data/fisheries_monitoring/data/models/%s.h5' % cls_name)
         
     def visualize_predictions(self):
         X_test = self.box_predictions['X_test']
