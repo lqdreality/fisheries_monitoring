@@ -27,7 +27,7 @@ def pretrained_affine_classifier(base_model, hidden_dim, num_output, opt='sgd', 
     x = Dense(hidden_dim, activation='relu')(x)
     predictions = Dense(num_output, activation='softmax')(x)
     # this is the model we will train
-    model = Model(input=base_model.input, output=predictions)
+    model = Model(inputs=base_model.input, outputs=predictions)
     # first: train only the top layers (which were randomly initialized)
     # i.e. freeze all convolutional InceptionV3 layers
     for layer in base_model.layers:

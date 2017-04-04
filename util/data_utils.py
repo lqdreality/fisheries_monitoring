@@ -11,6 +11,21 @@ from keras.preprocessing import image
 from scipy.misc import imread
 from scipy.misc import imresize
 
+
+def train_val_test_split(X, y, index, train_len, val_len):
+    N = X.shape[0]
+    
+    idx = np.random.permutation(N)
+    idx_train = idx[:int(train_len*N)]
+    idx_val = idx[int(train_len*N): int((train_len+val_len)*N)]
+    idx_test = idx[int((train_len+val_len)*N): N]
+    
+    train_X = {'X':X[idx_train], 'y': y[idx_train], 'idx': index[idx_train]}
+    val_X = {'X':X[idx_val], 'y': y[idx_val], 'idx': index[idx_val]}
+    test_X = {'X':X[idx_test], 'y': y[idx_test], 'idx': index[idx_test]}
+    
+    return train_X, val_X, test_X
+
 def load_cropped_train(data_path, width, height):
     """
     Loads the dataset of croped images used to train the classifier

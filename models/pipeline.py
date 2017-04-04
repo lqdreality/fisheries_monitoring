@@ -1,28 +1,38 @@
+import keras
+
 from util.data_utils import crop_images
-from util.data_utils import visualize_image
+from util.data_utils import visualize_grid
 
 class Pipeline(object):
     """
     Class that defines a complete pipeline to use for the Kaggle fish competition
     """
-    def __init__(self, loc, cls, loc_weights=None, cls_weights=None):
+    def __init__(self, loc=None, cls=None, loc_weights=None, cls_weights=None, only_weights=False):
         """
         Sets the classifier and localizer. The only requirement for both models is that they should
         implement a fit/predict API. 
         """
-        self.classifier = cls
-        if cls_weights != None:
-            self.classifier.load_weights(cls_weights)
+        if not only_weights:
+            self.classifier = cls
+            self.classifier.load_weights("/a/data/fisheries_monitoring/data/models/classifiers/%s.h5"%cls_weights)
+            #self.classifier = keras.models.load_model("/a/data/fisheries_monitoring/data/models/classifiers/%s.h5"%cls_weights)
             self.cls_istrained = True
-        else:
-            self.cls_istrained = False
-        
-        self.localizer = loc
-        if loc_weights != None:
-            self.localizer.load_weights(loc_weights)
+            self.localizer = keras.models.load_model("/a/data/fisheries_monitoring/data/models/localizers/%s.h5"%loc_weights)
             self.loc_istrained = True
-        else:
-            self.loc_istrained = False
+        else:    
+            self.classifier = cls
+            if cls_weights != None:
+                self.classifier.load_weights("/a/data/fisheries_monitoring/data/models/classifiers/%s.h5"%cls_weights)
+                self.cls_istrained = True
+            else:
+                self.cls_istrained = False
+
+            self.localizer = loc
+            if loc_weights != None:
+                self.localizer.load_weights("/a/data/fisheries_monitoring/data/models/localizers/%s.h5"%loc_weights)
+                self.loc_istrained = True
+            else:
+                self.loc_istrained = False
         
         self.cls_data = {}
         self.loc_data = {}
@@ -45,15 +55,16 @@ class Pipeline(object):
         Trains both models with data stored in instance attributes
         """
         # Check if data has been set
-        if len(self.loc_data) == 0 or len(self.cls_data) == 0:
+        if (len(self.loc_data) == 0 and not self.loc_istrained) or \
+           (len(self.cls_data) == 0 and not self.cls_istrained):
             print "Please set the training data for the classifier and the localizer"
             raise
         
         # Fit localizer first
         if not self.loc_istrained:
             self.localizer.fit(self.loc_data['X_train'], self.loc_data['y_train'],
-                               batch_size=loc_batch_size, nb_epoch=loc_num_epoch, 
-                               validation_data=(self.loc_data['X_val'], self.loc_data['y_val']))
+                               batch_size=loc_batch_size, nb_epoch=loc_num_epoch, verbose=2,
+                               validation_data=(self.loc_data['X_val'], self.loc_data['y_val']),)
         
         # Fit classifier
         if not self.cls_istrained:
@@ -68,7 +79,8 @@ class Pipeline(object):
         self.box_predictions['pred'] = box_pred
         
         # Crop original images based on the bbox predictions
-        W, H = self.cls_data['X_train'].shape[1:3]
+        #W, H = self.cls_data['X_train'].shape[1:3]
+        W, H = 224, 224
         cropped_pred = crop_images(X_test, box_pred, W, H)
         
         final_pred = self.classifier.predict(cropped_pred, batch_size, verbose)
