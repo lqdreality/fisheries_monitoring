@@ -2,6 +2,8 @@ import os
 import time
 import glob
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 from keras.utils import np_utils
 from keras.preprocessing import image
@@ -117,4 +119,52 @@ def crop_images(images, boxes, width, height):
         cropped_images[i] = fish.resize(height, width, 3)
         
     return cropped_images
-        
+
+
+def visualize_grid(data, preds):
+    numrows = 3
+    numcols = 3
+    
+    # Create grid
+    _, ax = plt.subplots(numcols, numrows)
+    
+    # Generate indices of images to show
+    idxs = np.random.choice(data.shape[0], size=numcols*numrows, replace=False)
+    n = 0
+    for i in range(numrows):
+        for j in range(numcols):
+            idx = idxs[n]
+            img = data[n]
+            # Visualize it along with the box
+            visualize_image(ax, img, i, j, pred_box=preds[idx])
+            n+=1
+            
+    plt.gca().axis('off')
+    plt.show()
+
+
+def visualize_image(ax, img, i, j, true_box = None, pred_box = None):
+    ax[i, j].imshow(img)
+    
+    if true_box is not None:
+        x, y, width, height = true_box
+        ax[i, j].add_patch(
+        patches.Rectangle(
+            (x, y), # x,y
+            width, # width
+            height, # height
+            hatch='\\',
+            fill=False      # remove background
+                )
+            )
+    if pred_box is not None:
+        x, y, width, height = pred_box
+        ax[i, j].add_patch(
+        patches.Rectangle(
+            (x, y), # x,y
+            width, # width
+            height, # height
+            hatch='-',
+            fill=False      # remove background
+                )
+            )

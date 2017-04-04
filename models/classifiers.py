@@ -14,7 +14,7 @@ def InceptionV3():
 
 
 def ResNet50():
-    import keras.applications.inception_v3 as rn50
+    import keras.applications.resnet50 as rn50
     base_model = rn50.ResNet50(weights='imagenet', include_top = False, input_shape=(224,224,3))
 
     return pretrained_affine_classifier(base_model, 1024, 8)
