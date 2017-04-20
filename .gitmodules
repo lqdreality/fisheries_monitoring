@@ -1,3 +1,3 @@
 [submodule "localizers/SSD"]
 	path = localizers/SSD
-	url = https://github.com/rykov8/ssd_keras
+	url = https://github.com/jsendino/SSD_keras
