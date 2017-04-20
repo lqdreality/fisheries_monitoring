@@ -1,3 +1,0 @@
-[submodule "localizers/ssd"]
-	path = localizers/ssd
-	url = https://github.com/rykov8/ssd_keras
