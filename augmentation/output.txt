@@ -1,0 +1,47 @@
+]0;IPython: fisheries_monitoring/augmentation  Class ALB for _90
+  Class BET for _90
+  Class DOL for _90
+  Class LAG for _90
+  Class NoF for _90
+/a/data/fisheries_monitoring/data/classifiers/non-superbox/rotate/NoF does not exist
+  Class OTHER for _90
+/a/data/fisheries_monitoring/data/classifiers/non-superbox/rotate/OTHER does not exist
+  Class SHARK for _90
+/a/data/fisheries_monitoring/data/classifiers/non-superbox/rotate/SHARK does not exist
+  Class YFT for _90
+/a/data/fisheries_monitoring/data/classifiers/non-superbox/rotate/YFT does not exist
+  Class ALB for _180
+  Class BET for _180
+  Class DOL for _180
+  Class LAG for _180
+  Class NoF for _180
+  Class OTHER for _180
+  Class SHARK for _180
+  Class YFT for _180
+  Class ALB for _270
+  Class BET for _270
+  Class DOL for _270
+  Class LAG for _270
+  Class NoF for _270
+  Class OTHER for _270
+  Class SHARK for _270
+  Class YFT for _270
+  Class ALB for _1
+/a/data/fisheries_monitoring/data/classifiers/non-superbox/vflip/ALB does not exist
+[0;31m[0m
+[0;31mNameError[0mTraceback (most recent call last)
+[0;32m/a/h/jli04/fisheries_monitoring/augmentation/augmentation_classifier.py[0m in [0;36m<module>[0;34m()[0m
+[1;32m    107[0m     [0maugmenter[0m [0;34m=[0m [0maugmenters[0m[0;34m.[0m[0mFliplr[0m[0;34m([0m[0mparam[0m[0;34m[[0m[0;36m0[0m[0;34m][0m[0;34m)[0m[0;34m[0m[0m
+[1;32m    108[0m     [0mparam_name[0m [0;34m=[0m [0;34m'_'[0m [0;34m+[0m [0mstr[0m[0;34m([0m[0mint[0m[0;34m([0m[0mparam[0m[0;34m[[0m[0;36m0[0m[0;34m][0m[0;34m)[0m[0;34m)[0m[0;34m[0m[0m
+[0;32m--> 109[0;31m     [0mapplyNonAffineAugmentation[0m[0;34m([0m[0mdir_name[0m[0;34m,[0m [0maugmenter[0m[0;34m,[0m [0mparam_name[0m[0;34m,[0m [0mover_write[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m    110[0m [0;34m[0m[0m
+[1;32m    111[0m [0;34m[0m[0m
+
+[0;32m/a/h/jli04/fisheries_monitoring/augmentation/augmentation_classifier.py[0m in [0;36mapplyNonAffineAugmentation[0;34m(dir_name, augmenter, param_name, over_write)[0m
+[1;32m     50[0m             [0;32mprint[0m [0mdir_name[0m [0;34m+[0m [0;34m'/'[0m [0;34m+[0m [0mclass_i[0m [0;34m+[0m [0;34m' does not exist'[0m[0;34m[0m[0m
+[1;32m     51[0m             [0mos[0m[0;34m.[0m[0mmkdir[0m[0;34m([0m[0mdir_name[0m [0;34m+[0m [0;34m'/'[0m [0;34m+[0m [0mclass_i[0m[0;34m)[0m[0;34m[0m[0m
+[0;32m---> 52[0;31m         [0mos[0m[0;34m.[0m[0mchdir[0m[0;34m([0m[0mLOCALIZER_DATA_DIR[0m [0;34m+[0m [0;34m'original/'[0m [0;34m+[0m [0mclass_i[0m[0;34m)[0m[0;34m[0m[0m
+[0m[1;32m     53[0m         [0mimages[0m [0;34m=[0m [0mglob[0m[0;34m([0m[0;34m'*.jpg'[0m[0;34m)[0m[0;34m[0m[0m
+[1;32m     54[0m         [0;32mfor[0m [0mff_img[0m [0;32min[0m [0mimages[0m [0;34m:[0m[0;34m[0m[0m
+
+[0;31mNameError[0m: global name 'LOCALIZER_DATA_DIR' is not defined
