@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[21]:
 
 import numpy as np
 np.random.seed(2016)
@@ -38,26 +38,33 @@ from keras.layers import Dense, GlobalAveragePooling2D
 from keras import backend as K
 
 
-# In[2]:
+# In[25]:
 
+RANDOM_STATE = 8574
 INPUT_WIDTH = 224
 INPUT_HEIGHT = 224
-DATA_PATH = '/a/data/fisheries_monitoring/data/classifiers/non-superbox/'
+DATA_PATH = '/a/data/fisheries_monitoring/data/classifiers/superbox/'
+ORIG_PATH = '/a/data/fisheries_monitoring/data/classifiers/superbox/original'
+ORIG_DIST = {}
+CLASSES = ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
+for cls in  CLASSES:
+    files = glob.glob(ORIG_PATH + '/' + cls + '/*.jpg')
+    ORIG_DIST[cls] = len(files)
+print "Number of examples in each class of the original data:"
+for key, val in ORIG_DIST.iteritems():
+    print key, '\t', val
+ORIG_SIZE = sum(ORIG_DIST.values())
+print "Total number of examples in original data:", ORIG_SIZE
 
 
-# In[3]:
+# In[26]:
 
-aug_folders = glob.glob(DATA_PATH + '*')
-for folder in aug_folders:
-    print "folder name:", folder
-
-
-# In[4]:
-
-def load_all_labels(aug_folders):
-    img = []
-    file_class = []
-    for folder in aug_folders:
+def load_all_labels(folders):
+    all_img = []
+    all_file_class = []
+    for folder in folders:
+        img = []
+        file_class = []
         folder_name = os.path.basename(folder)
         print('Loading augmentation: {}'.format(folder_name))
         classes = ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
@@ -69,19 +76,37 @@ def load_all_labels(aug_folders):
                 img.append(folder_name + '/' + cls + '/' + flbase)
                 file_class.append(idx) 
         print "Number of examples:", len(file_class)
-        print 
-    all_labels = pd.DataFrame({"img":img, "classes":file_class})
+        print "Times of original:", len(file_class)/ORIG_SIZE
+        print
+        all_img += img
+        all_file_class += file_class
+    all_labels = pd.DataFrame({"img":all_img, "classes":all_file_class})
     all_labels = all_labels[["img", "classes"]]
     return all_labels
 
 
-def train_val_test_split(all_labels, val_size, test_size):
-    all_labels = shuffle(all_labels, random_state = 8574)
-    test_labels = all_labels[0:test_size]
-    val_labels = all_labels[test_size:test_size + val_size]
-    train_labels = all_labels[test_size + val_size:]
-    return train_labels, val_labels, test_labels
 
+def train_val_labels_split(labels, train_size = 0.8):
+    org_labels = labels[labels["img"].str.startswith("original")]
+    print "original data size:", len(org_labels)
+    train = []
+    test = []
+    for i in xrange(8):
+        train_tmp, test_tmp = train_test_split(org_labels[org_labels["classes"] == i], train_size = train_size, random_state = RANDOM_STATE)
+        train.append(train_tmp)
+        test.append(test_tmp)
+    return pd.concat(train), pd.concat(test)
+
+def aug_train_labels(labels):
+    aug = []
+    i = 0
+    for label in labels["img"]:
+        label = label[9:-4]
+        aug.append(all_labels[all_labels["img"].str.contains(label)])
+        if (i+1) in [k*len(labels)/5 for k in xrange(1,6)]:
+            print "Loading augmentated training data...{}% done!".format((i+2)*100/len(labels))
+        i += 1
+    return pd.concat(aug)
 
 def data_generator(batch_size, labels, INPUT_WIDTH, INPUT_HEIGHT):
     while True:
@@ -199,39 +224,25 @@ def make_plot(data, nrow = 2, ncol = 2, index = None, true_box = None, pred_box 
         visualize_prediction(img, index = idx, true_box = tbox, pred_box = pbox, ax = axi)
 
 
-# In[5]:
+# In[27]:
 
-all_labels = load_all_labels(aug_folders)
-
-
-# In[6]:
-
-selected_aug = {"ALB" : ["original"],
-                "BET" : ["original"],
-                "DOL" : ["original"],
-                "LAG" : ["original"],
-                "NoF" : ["original"],
-                "OTHER" : ["original"],
-                "SHARK" : ["original"],
-                "YFT" : ["original"]}
-selected_labels = pd.DataFrame(columns = ["img", "classes"])
-for key, values in selected_aug.iteritems():
-    for value in values:
-        labels_tmp = all_labels[all_labels["img"].str.startswith(value + '/' + key)]
-        selected_labels = selected_labels.append(labels_tmp)
-selected_labels["classes"] = selected_labels["classes"].astype(int)
+all_folders = glob.glob(DATA_PATH + '*')
+all_labels = load_all_labels(all_folders)
+print "Total number of examples:", len(all_labels)
+print "Total number of times of original:", len(all_labels)/ORIG_SIZE
 
 
-# In[7]:
+# In[28]:
 
-train_labels, val_labels, test_labels = train_val_test_split(selected_labels, int(0.2*len(selected_labels)), 0)
-print "all data size: ", len(selected_labels)
-print "train data size:", len(train_labels)
+train_labels, val_labels = train_val_labels_split(all_labels, train_size = 0.8)
+aug_labels = aug_train_labels(train_labels)
+print "original train data size:", len(train_labels)
+print "augmented train data size:", len(aug_labels)
+print "number of times augmented:", len(aug_labels)/len(train_labels)
 print "validation data size:", len(val_labels)
-print "test data size:", len(test_labels)
 
 
-# In[8]:
+# In[29]:
 
 base_model = ResNet50(weights='imagenet', include_top = False, input_shape=(224,224,3))
 
@@ -247,24 +258,24 @@ for layer in base_model.layers:
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
 
-# In[66]:
+# In[30]:
 
 batch_size = 30
-steps_per_epoch = len(train_labels) / batch_size
+steps_per_epoch = len(aug_labels) / batch_size
 nb_epoch = 30
 callbacks = [EarlyStopping(monitor='val_loss', patience=3, verbose=0),]
 
-history = model.fit_generator(generator = data_generator(batch_size, train_labels, INPUT_WIDTH, INPUT_HEIGHT), 
+history = model.fit_generator(generator = data_generator(batch_size, aug_labels, INPUT_WIDTH, INPUT_HEIGHT), 
                               steps_per_epoch = steps_per_epoch,
                               epochs=nb_epoch,
                               verbose=1,
-#                               callbacks = callbacks,
+                              callbacks = callbacks,
                               validation_data = data_generator(batch_size, val_labels, INPUT_WIDTH, INPUT_HEIGHT),
                               validation_steps = 30)
-model.save('/a/data/fisheries_monitoring/data/models/classifiers/classifier2.h5')
+model.save('/a/data/fisheries_monitoring/data/models/classifiers/classifier3.h5')
 
 
-# In[67]:
+# In[ ]:
 
 X_test, y_test, id_test, X_test_raw = load_data(val_labels, INPUT_WIDTH, INPUT_HEIGHT)
 predictions_valid = model.predict(X_test.astype('float32'), batch_size=batch_size, verbose=1)
@@ -272,7 +283,7 @@ score = log_loss(y_test, predictions_valid)
 print "log loss score: ", score
 
 
-# In[68]:
+# In[ ]:
 
 from sklearn.metrics import accuracy_score
 y_pred = np.argmax(predictions_valid, axis = 1)
@@ -280,7 +291,7 @@ acc = accuracy_score(y_test, y_pred, normalize=True, sample_weight=None)
 print "accuracy: ", acc
 
 
-# In[69]:
+# In[ ]:
 
 print y_test[0:35]
 print y_pred[0:35]

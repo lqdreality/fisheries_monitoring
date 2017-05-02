@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[17]:
+# In[95]:
 
 import numpy as np
 np.random.seed(2016)
@@ -38,21 +38,21 @@ from keras.layers import Dense, GlobalAveragePooling2D
 from keras import backend as K
 
 
-# In[18]:
+# In[96]:
 
 INPUT_WIDTH = 224
 INPUT_HEIGHT = 224
 DATA_PATH = '/a/data/fisheries_monitoring/data/classifiers/superbox/'
 
 
-# In[19]:
+# In[97]:
 
 aug_folders = glob.glob(DATA_PATH + '*')
 for folder in aug_folders:
     print "folder name:", folder
 
 
-# In[20]:
+# In[98]:
 
 def load_all_labels(aug_folders):
     img = []
@@ -100,7 +100,6 @@ def data_generator(batch_size, labels, INPUT_WIDTH, INPUT_HEIGHT):
             class_batch[i] = np_utils.to_categorical(labels.iloc[n]["classes"], 8)
         
         yield (img_batch, class_batch)
-
 
 def load_data(labels, INPUT_WIDTH, INPUT_HEIGHT):
     X = []
@@ -199,12 +198,12 @@ def make_plot(data, nrow = 2, ncol = 2, index = None, true_box = None, pred_box 
         visualize_prediction(img, index = idx, true_box = tbox, pred_box = pbox, ax = axi)
 
 
-# In[21]:
+# In[99]:
 
 all_labels = load_all_labels(aug_folders)
 
 
-# In[22]:
+# In[100]:
 
 selected_aug = {"ALB" : ["original"],
                 "BET" : ["original"],
@@ -222,7 +221,7 @@ for key, values in selected_aug.iteritems():
 selected_labels["classes"] = selected_labels["classes"].astype(int)
 
 
-# In[23]:
+# In[101]:
 
 train_labels, val_labels, test_labels = train_val_test_split(selected_labels, int(0.2*len(selected_labels)), 0)
 print "all data size: ", len(selected_labels)
@@ -231,7 +230,7 @@ print "validation data size:", len(val_labels)
 print "test data size:", len(test_labels)
 
 
-# In[24]:
+# In[102]:
 
 base_model = ResNet50(weights='imagenet', include_top = False, input_shape=(224,224,3))
 
@@ -247,7 +246,7 @@ for layer in base_model.layers:
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
 
-# In[66]:
+# In[ ]:
 
 batch_size = 30
 steps_per_epoch = len(train_labels) / batch_size
@@ -258,13 +257,13 @@ history = model.fit_generator(generator = data_generator(batch_size, train_label
                               steps_per_epoch = steps_per_epoch,
                               epochs=nb_epoch,
                               verbose=1,
-#                             callbacks = callbacks,
+#                               callbacks = callbacks,
                               validation_data = data_generator(batch_size, val_labels, INPUT_WIDTH, INPUT_HEIGHT),
                               validation_steps = 30)
 model.save('/a/data/fisheries_monitoring/data/models/classifiers/classifier1.h5')
 
 
-# In[67]:
+# In[ ]:
 
 X_test, y_test, id_test, X_test_raw = load_data(val_labels, INPUT_WIDTH, INPUT_HEIGHT)
 predictions_valid = model.predict(X_test.astype('float32'), batch_size=batch_size, verbose=1)
@@ -272,7 +271,7 @@ score = log_loss(y_test, predictions_valid)
 print "log loss score: ", score
 
 
-# In[68]:
+# In[ ]:
 
 from sklearn.metrics import accuracy_score
 y_pred = np.argmax(predictions_valid, axis = 1)
@@ -280,7 +279,7 @@ acc = accuracy_score(y_test, y_pred, normalize=True, sample_weight=None)
 print "accuracy: ", acc
 
 
-# In[69]:
+# In[ ]:
 
 print y_test[0:35]
 print y_pred[0:35]
