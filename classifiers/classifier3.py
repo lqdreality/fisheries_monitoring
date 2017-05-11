@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[21]:
+# In[1]:
 
 import numpy as np
 np.random.seed(2016)
@@ -38,13 +38,13 @@ from keras.layers import Dense, GlobalAveragePooling2D
 from keras import backend as K
 
 
-# In[25]:
+# In[2]:
 
 RANDOM_STATE = 8574
 INPUT_WIDTH = 224
 INPUT_HEIGHT = 224
 DATA_PATH = '/a/data/fisheries_monitoring/data/classifiers/superbox/'
-ORIG_PATH = '/a/data/fisheries_monitoring/data/classifiers/superbox/original'
+ORIG_PATH = DATA_PATH + 'original'
 ORIG_DIST = {}
 CLASSES = ['ALB', 'BET', 'DOL', 'LAG', 'NoF', 'OTHER', 'SHARK', 'YFT']
 for cls in  CLASSES:
@@ -57,7 +57,7 @@ ORIG_SIZE = sum(ORIG_DIST.values())
 print "Total number of examples in original data:", ORIG_SIZE
 
 
-# In[26]:
+# In[3]:
 
 def load_all_labels(folders):
     all_img = []
@@ -224,7 +224,7 @@ def make_plot(data, nrow = 2, ncol = 2, index = None, true_box = None, pred_box 
         visualize_prediction(img, index = idx, true_box = tbox, pred_box = pbox, ax = axi)
 
 
-# In[27]:
+# In[4]:
 
 all_folders = glob.glob(DATA_PATH + '*')
 all_labels = load_all_labels(all_folders)
@@ -232,10 +232,13 @@ print "Total number of examples:", len(all_labels)
 print "Total number of times of original:", len(all_labels)/ORIG_SIZE
 
 
-# In[28]:
+# In[5]:
 
 train_labels, val_labels = train_val_labels_split(all_labels, train_size = 0.8)
 aug_labels = aug_train_labels(train_labels)
+train_labels = shuffle(train_labels, random_state = RANDOM_STATE)
+val_labels = shuffle(val_labels, random_state = RANDOM_STATE)
+aug_labels = shuffle(val_labels, random_state = RANDOM_STATE)
 print "original train data size:", len(train_labels)
 print "augmented train data size:", len(aug_labels)
 print "number of times augmented:", len(aug_labels)/len(train_labels)
